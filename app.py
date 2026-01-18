@@ -1,10 +1,9 @@
 import streamlit as st
-import time
 import os
 
 # ---------------- PAGE CONFIG ----------------
 st.set_page_config(
-    page_title="Login Website (With Protection)",
+    page_title="Secure Login Demo",
     layout="centered"
 )
 
@@ -14,21 +13,20 @@ CREDENTIALS = {
     "aadhish": "0069"
 }
 
-# ---------------- SESSION STATE ----------------
+# ---------------- SESSION STATE (SAFE INIT) ----------------
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
-
-if "attempts" not in st.session_state:
-    st.session_state.attempts = 0
-
-if "last_time" not in st.session_state:
-    st.session_state.last_time = time.time()
 
 if "blocked" not in st.session_state:
     st.session_state.blocked = False
 
+# ---------------- RESET BLOCK ON FRESH LOAD ----------------
+if "fresh_load" not in st.session_state:
+    st.session_state.blocked = False
+    st.session_state.fresh_load = True
+
 # ---------------- TITLE ----------------
-st.markdown("## 🔐 Login Website (With Protection)")
+st.markdown("## 🔐 Secure Login Demo")
 st.caption(
     "This page demonstrates how brute-force attacks are detected and blocked "
     "using behavior-based security mechanisms."
@@ -36,13 +34,6 @@ st.caption(
 
 # ---------------- LOGIN FORM ----------------
 username = st.text_input("Username")
-
-# Honeypot (hidden field)
-honeypot = st.text_input(
-    "Leave this field empty",
-    value="",
-    label_visibility="collapsed"
-)
 
 col1, col2 = st.columns([5, 1])
 
@@ -52,33 +43,15 @@ with col1:
 with col2:
     st.markdown("<br>", unsafe_allow_html=True)
     if st.button("🐞"):
-        # Bug simulates aggressive bot behavior
-        st.session_state.attempts += 3
+        # Bot detected instantly
         st.session_state.blocked = True
 
 st.caption("🐞 Click the bug icon to simulate a brute-force attack")
 
 # ---------------- LOGIN BUTTON ----------------
 if st.button("Login"):
-    now = time.time()
-    time_gap = now - st.session_state.last_time
-    st.session_state.last_time = now
 
-    # ---- Honeypot detection ----
-    if honeypot.strip() != "":
-        st.session_state.blocked = True
-
-    # ---- Time-based detection ----
-    if time_gap < 1:  # very fast = bot
-        st.session_state.attempts += 1
-    else:
-        st.session_state.attempts = 0  # human behavior reset
-
-    # ---- Behavior monitoring (AI-style) ----
-    if st.session_state.attempts >= 3:
-        st.session_state.blocked = True
-
-    # ---- Blocked ----
+    # If bot detected via bug icon
     if st.session_state.blocked:
         st.error(
             "🚫 404 ERROR\n\n"
@@ -86,7 +59,7 @@ if st.button("Login"):
             "Access to this website has been blocked."
         )
 
-    # ---- Human login ----
+    # Manual human login (correct credentials)
     elif username in CREDENTIALS and password == CREDENTIALS[username]:
         st.session_state.logged_in = True
 
