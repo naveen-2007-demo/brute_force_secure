@@ -13,17 +13,12 @@ CREDENTIALS = {
     "aadhish": "0069"
 }
 
-# ---------------- SESSION STATE (SAFE INIT) ----------------
+# ---------------- SESSION STATE ----------------
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
-if "blocked" not in st.session_state:
-    st.session_state.blocked = False
-
-# ---------------- RESET BLOCK ON FRESH LOAD ----------------
-if "fresh_load" not in st.session_state:
-    st.session_state.blocked = False
-    st.session_state.fresh_load = True
+if "bot_detected" not in st.session_state:
+    st.session_state.bot_detected = False
 
 # ---------------- TITLE ----------------
 st.markdown("## 🔐 Secure Login Demo")
@@ -42,27 +37,26 @@ with col1:
 
 with col2:
     st.markdown("<br>", unsafe_allow_html=True)
+
+    # 🐞 BUG ICON → INSTANT BLOCK
     if st.button("🐞"):
-        # Bot detected instantly
-        st.session_state.blocked = True
+        st.session_state.bot_detected = True
 
 st.caption("🐞 Click the bug icon to simulate a brute-force attack")
 
-# ---------------- LOGIN BUTTON ----------------
-if st.button("Login"):
+# ---------------- INSTANT BOT BLOCK MESSAGE ----------------
+if st.session_state.bot_detected:
+    st.error(
+        "🚫 404 ERROR\n\n"
+        "Suspicious automated activity detected.\n"
+        "Access to this website has been blocked."
+    )
 
-    # If bot detected via bug icon
-    if st.session_state.blocked:
-        st.error(
-            "🚫 404 ERROR\n\n"
-            "Suspicious automated activity detected.\n"
-            "Access to this website has been blocked."
-        )
+# ---------------- LOGIN BUTTON (HUMANS ONLY) ----------------
+if st.button("Login") and not st.session_state.bot_detected:
 
-    # Manual human login (correct credentials)
-    elif username in CREDENTIALS and password == CREDENTIALS[username]:
+    if username in CREDENTIALS and password == CREDENTIALS[username]:
         st.session_state.logged_in = True
-
     else:
         st.error("❌ Invalid username or password")
 
