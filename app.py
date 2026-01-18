@@ -17,8 +17,8 @@ CREDENTIALS = {
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
-if "bot_detected" not in st.session_state:
-    st.session_state.bot_detected = False
+if "show_404" not in st.session_state:
+    st.session_state.show_404 = False
 
 # ---------------- TITLE ----------------
 st.markdown("## 🔐 Secure Login Demo")
@@ -38,23 +38,24 @@ with col1:
 with col2:
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # 🐞 BUG ICON → INSTANT BLOCK
+    # 🐞 BUG ICON → SHOW 404 WARNING ONLY
     if st.button("🐞"):
-        st.session_state.bot_detected = True
+        st.session_state.show_404 = True
 
 st.caption("🐞 Click the bug icon to simulate a brute-force attack")
 
-# ---------------- INSTANT BOT BLOCK MESSAGE ----------------
-if st.session_state.bot_detected:
+# ---------------- SHOW 404 WARNING (TEMPORARY) ----------------
+if st.session_state.show_404:
     st.error(
         "🚫 404 ERROR\n\n"
         "Suspicious automated activity detected.\n"
         "Access to this website has been blocked."
     )
+    # Auto-reset after showing warning
+    st.session_state.show_404 = False
 
-# ---------------- LOGIN BUTTON (HUMANS ONLY) ----------------
-if st.button("Login") and not st.session_state.bot_detected:
-
+# ---------------- LOGIN BUTTON (HUMAN LOGIN) ----------------
+if st.button("Login"):
     if username in CREDENTIALS and password == CREDENTIALS[username]:
         st.session_state.logged_in = True
     else:
